@@ -18,7 +18,7 @@ public class EmployeeService {
 	public Employee createEmployee(Employee employee) {
 
 		if (employeeRepository.findByEmail(employee.getEmail()).isPresent()) {
-			throw new EmployeeAlreadyExistsException("Email already exists: ..." + employee.getEmail());
+			throw new EmployeeAlreadyExistsException("Email already exists:" + employee.getEmail());
 		}
 		return employeeRepository.save(employee);
 	}
@@ -50,5 +50,12 @@ public class EmployeeService {
 		existing.setDepartment(updated.getDepartment());
 		existing.setSalary(updated.getSalary());
 		return employeeRepository.save(existing);
+	}
+
+	public void deleteEmployee(Long id) {
+	    if (!employeeRepository.existsById(id)) {
+	        throw new EmployeeNotFoundException("Employee not found with id: " + id);
+	    }
+	    employeeRepository.deleteById(id);
 	}
 }
