@@ -86,8 +86,6 @@ class EmployeeServiceTest {
 	@Test
 	void throwsNotFoundWhenIdDoesNotExist() {
 
-		
-
 		when(employeeRepository.findById(99L)).thenReturn(Optional.empty());
 
 		// Act and Assert
@@ -135,12 +133,50 @@ class EmployeeServiceTest {
 		assertEquals("Engineering", result.getDepartment());
 		assertEquals(new BigDecimal("75000.00"), result.getSalary());
 
-		
-		
 		// verify
 		verify(employeeRepository).findById(newValue.getId());
 		verify(employeeRepository).findByEmail(newValue.getEmail());
 		verify(employeeRepository).save(oldValues);
 
 	}
+
+	@Test
+	void updateEmployeeFailsWhenEmailBelongsToAnotherEmployee() {
+
+		Employee oldValues = new Employee();
+		oldValues.setId(1L);
+		oldValues.setFirstName("oldFirst");
+		oldValues.setLastName("oldLast");
+		oldValues.setEmail("old@gmail.com");
+		oldValues.setDepartment("Engineering");
+		oldValues.setSalary((new BigDecimal("120000.00")));
+
+		Employee other = new Employee();
+		other.setId(2L);
+		other.setFirstName("otherFirst");
+		other.setLastName("otherLast");
+		other.setEmail("taken@gmail.com");
+		other.setDepartment("Engineering");
+		other.setSalary((new BigDecimal("75000.00")));
+
+		Employee newValue = new Employee();
+		newValue.setId(1L);
+		newValue.setFirstName("oldFirst");
+		newValue.setLastName("oldLast");
+		newValue.setEmail("taken@gmail.com");
+		newValue.setDepartment("Engineering");
+		newValue.setSalary((new BigDecimal("120000.00")));
+
+		when(employeeRepository.findById(oldValues.getId())).thenReturn(Optional.of(oldValues));
+		when(employeeRepository.findByEmail(other.getEmail())).thenReturn(Optional.of(other));
+
+		// Act & Assert
+
+		assertThrows(EmployeeAlreadyExistsException.class, () -> employeeService.updateEmployee(1L, newValue));
+
+		// verify
+		verify(employeeRepository, never()).save(any());
+
+	}
+
 }
