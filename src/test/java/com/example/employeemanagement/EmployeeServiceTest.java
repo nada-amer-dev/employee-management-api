@@ -179,4 +179,39 @@ class EmployeeServiceTest {
 
 	}
 
+	@Test
+	void updateEmployySucceedsWhenEmployeeKeepsTheirEmail() {
+
+		Employee oldValues = new Employee();
+		oldValues.setId(1L);
+		oldValues.setFirstName("oldFirst");
+		oldValues.setLastName("oldLast");
+		oldValues.setEmail("old@gmail.com");
+		oldValues.setDepartment("Engineering");
+		oldValues.setSalary((new BigDecimal("120000.00")));
+
+		Employee newValue = new Employee();
+		newValue.setId(1L);
+		newValue.setFirstName("oldFirst");
+		newValue.setLastName("oldLast");
+		newValue.setEmail("old@gmail.com");
+		newValue.setDepartment("Engineering");
+		newValue.setSalary((new BigDecimal("200000.00")));
+
+		when(employeeRepository.findByEmail(newValue.getEmail())).thenReturn(Optional.of(oldValues));
+		when(employeeRepository.findById(1L)).thenReturn(Optional.of(oldValues));
+		when(employeeRepository.save(any(Employee.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		// Act
+		Employee result = employeeService.updateEmployee(1L, newValue);
+
+		// Assert
+		assertEquals(new BigDecimal("200000.00"), result.getSalary());
+
+		// verify
+
+		verify(employeeRepository).save(oldValues);
+
+	}
+
 }
